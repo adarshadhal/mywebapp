@@ -1,0 +1,23 @@
+#Step 1 — Download Maven
+wget https://downloads.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
+
+#Step 2 — Extract it
+tar -xvzf apache-maven-3.9.9-bin.tar.gz
+
+#Step 3 — Move to /opt
+sudo mv apache-maven-3.9.9 /opt/maven
+
+#Step 4 — Set Environment Variables (THIS is what you were missing)
+sudo vi /etc/profile.d/maven.sh
+
+#Paste the following inside the file:
+export M2_HOME=/opt/maven
+export MAVEN_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+
+#Step 5 — Make the script executable & apply it
+sudo chmod +x /etc/profile.d/maven.sh
+source /etc/profile.d/maven.sh
+
+#Step 6 — Verify installation
+mvn -version
