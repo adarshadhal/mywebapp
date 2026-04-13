@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All Records — MyApp</title>
+  <link th:href="@{/css/base.css}" rel="stylesheet"/>
+  <style>
+    body { display:flex; min-height:100vh; }
+
+    .sidebar{width:var(--sw);flex-shrink:0;background:rgba(11 9 26/.95);backdrop-filter:blur(20px);border-right:1px solid var(--rim);position:fixed;inset-block:0;left:0;z-index:200;display:flex;flex-direction:column;}
+    .sb-brand{padding:28px 24px 22px;border-bottom:1px solid var(--rim2);display:flex;align-items:center;gap:12px;}
+    .brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#00f5c8,#6366f1);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:21px;color:#fff;box-shadow:0 0 0 1px rgba(0 245 200/.25),0 6px 24px rgba(0 245 200/.2);position:relative;overflow:hidden;flex-shrink:0;}
+    .brand-mark::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255 255 255/.3),transparent 55%);}
+    .brand-info .name{font-family:'Instrument Serif',serif;font-size:20px;background:linear-gradient(90deg,#00f5c8,#a5b4fc);background-size:200%;animation:shimmer 5s linear infinite;}
+    .brand-info .by{font-size:10.5px;color:rgba(255 255 255/.25);letter-spacing:.04em;}
+    .sb-body{flex:1;padding:16px 14px;display:flex;flex-direction:column;gap:2px;}
+    .nav-label{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:rgba(255 255 255/.2);padding:14px 10px 6px;}
+    .nav-link{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:11px;color:rgba(255 255 255/.42);text-decoration:none;font-size:14px;font-weight:500;transition:all .18s;position:relative;}
+    .nav-link:hover{background:rgba(255 255 255/.06);color:var(--snow);}
+    .nav-link.active{background:linear-gradient(135deg,rgba(99 102 241/.22),rgba(0 245 200/.08));color:var(--teal);border:1px solid rgba(0 245 200/.18);}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:2px;background:var(--teal);border-radius:0 2px 2px 0;}
+    .nav-ic{font-size:18px;width:24px;text-align:center;}
+    .sb-foot{padding:14px;border-top:1px solid var(--rim2);}
+    .user-card{background:rgba(255 255 255/.04);border:1px solid var(--rim);border-radius:13px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+    .u-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#f43f8e);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:17px;color:#fff;flex-shrink:0;}
+    .u-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .u-role{font-size:10.5px;color:var(--fog);}
+    .logout-btn{background:rgba(244 63 142/.1);border:1px solid rgba(244 63 142/.2);border-radius:8px;padding:6px 10px;color:#fb7db4;font-family:'Geist',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+    .logout-btn:hover{background:rgba(244 63 142/.2);}
+
+    .main { margin-left:var(--sw); flex:1; padding:40px; min-width:0; }
+
+    .topbar { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; gap:16px; flex-wrap:wrap; }
+    .topbar h1 { font-family:'Instrument Serif',serif; font-size:30px; font-weight:400; margin-bottom:5px; }
+    .topbar p { font-size:14px; color:var(--fog); }
+    .btn-new {
+      display:inline-flex; align-items:center; gap:7px;
+      background:linear-gradient(135deg,#6366f1,#0ea5e9);
+      border:none; border-radius:12px; padding:12px 22px;
+      color:#fff; font-family:'Geist',sans-serif; font-size:13.5px; font-weight:700;
+      cursor:pointer; text-decoration:none; white-space:nowrap;
+      position:relative; overflow:hidden;
+      transition:transform .15s,box-shadow .2s;
+      box-shadow:0 4px 22px rgba(99 102 241/.4);
+    }
+    .btn-new::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255 255 255/.15),transparent);}
+    .btn-new:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(99 102 241/.55);}
+
+    .alert{display:flex;align-items:center;gap:10px;padding:13px 18px;border-radius:12px;font-size:13px;margin-bottom:20px;border:1px solid;}
+    .as{background:rgba(16 185 129/.08);border-color:rgba(16 185 129/.25);color:var(--jade);}
+    .ae{background:rgba(244 63 142/.08);border-color:rgba(244 63 142/.25);color:#fb7db4;}
+
+    .filter-bar { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+    .search-wrap { flex:1; min-width:220px; position:relative; }
+    .search-ico { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; opacity:.3; pointer-events:none; }
+    .fi { width:100%; background:rgba(255 255 255/.04); border:1px solid var(--rim); border-radius:12px; padding:11px 16px 11px 44px; color:var(--snow); font-family:'Geist',sans-serif; font-size:14px; outline:none; transition:border-color .2s,box-shadow .2s; }
+    .fi:focus { border-color:rgba(0 245 200/.4); box-shadow:0 0 0 3px rgba(0 245 200/.08); }
+    .fi::placeholder { color:rgba(255 255 255/.2); }
+    select.fi { padding-left:16px; min-width:160px; appearance:none; cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300f5c8' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center; padding-right:36px;
+    }
+    select.fi option { background:#0b091a; }
+
+    .tbl-card { background:rgba(255 255 255/.03); border:1px solid var(--rim); border-radius:22px; overflow:hidden; box-shadow:0 20px 70px rgba(0 0 0/.35); }
+    .tbl-meta { padding:16px 28px; border-bottom:1px solid var(--rim2); background:rgba(255 255 255/.02); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    .tbl-meta-l { font-size:13px; color:var(--fog); }
+    .tbl-meta-l b { color:var(--teal); }
+    .s3-live { display:inline-flex; align-items:center; gap:7px; background:rgba(16 185 129/.1); border:1px solid rgba(16 185 129/.22); color:var(--jade); border-radius:99px; padding:5px 14px; font-size:11.5px; font-weight:700; }
+    .s3-dot { width:6px; height:6px; border-radius:50%; background:var(--jade); animation:s3pulse 2s infinite; }
+    @keyframes s3pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+    table { width:100%; border-collapse:collapse; }
+    th { padding:13px 24px; text-align:left; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--fog); border-bottom:1px solid var(--rim2); white-space:nowrap; }
+    td { padding:16px 24px; font-size:14px; border-bottom:1px solid rgba(255 255 255/.032); vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tbody tr { transition:background .15s; }
+    tbody tr:hover td { background:rgba(255 255 255/.022); }
+
+    .title-cell .t { font-weight:700; margin-bottom:2px; }
+    .title-cell .id { font-size:10.5px; color:var(--fog); font-family:'Geist Mono',monospace; }
+    .cat-pill { background:rgba(99 102 241/.14); color:#a5b4fc; border:1px solid rgba(99 102 241/.2); border-radius:8px; padding:3px 11px; font-size:12px; font-weight:600; }
+    .desc-cell { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--fog); font-size:13px; }
+
+    .badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.04em; }
+    .badge::before { content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0; }
+    .badge-active { background:rgba(16 185 129/.14);color:#6ee7b7;border:1px solid rgba(16 185 129/.2); }
+    .badge-active::before { background:#10b981; }
+    .badge-pending { background:rgba(245 166 35/.14);color:#fde68a;border:1px solid rgba(245 166 35/.2); }
+    .badge-pending::before { background:#f5a623; }
+    .badge-closed { background:rgba(255 255 255/.06);color:var(--fog);border:1px solid var(--rim); }
+    .badge-closed::before { background:rgba(255 255 255/.25); }
+
+    .del-btn { background:rgba(244 63 142/.08); border:1px solid rgba(244 63 142/.2); border-radius:9px; padding:7px 13px; color:#fb7db4; font-family:'Geist',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:background .15s, transform .1s; display:flex; align-items:center; gap:5px; }
+    .del-btn:hover { background:rgba(244 63 142/.18); transform:scale(1.02); }
+
+    .empty-state { text-align:center; padding:72px 24px; }
+    .empty-icon { font-size:48px; margin-bottom:18px; opacity:.45; }
+    .empty-title { font-family:'Instrument Serif',serif; font-size:24px; font-weight:400; margin-bottom:8px; }
+    .empty-desc { font-size:14px; color:var(--fog); }
+    .empty-cta { display:inline-block;margin-top:22px;background:linear-gradient(135deg,rgba(99 102 241/.18),rgba(0 245 200/.1));color:var(--teal);border:1px solid rgba(0 245 200/.25);border-radius:11px;padding:11px 26px;font-size:14px;font-weight:700;text-decoration:none;transition:box-shadow .2s; }
+    .empty-cta:hover { box-shadow:0 6px 24px rgba(0 245 200/.2); }
+
+    @media(max-width:768px){ .sidebar{display:none;} .main{margin-left:0;padding:24px 16px;} }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="brand-mark">M</div>
+    <div class="brand-info"><div class="name gt">MyApp</div><div class="by">by Adarsha</div></div>
+  </div>
+  <nav class="sb-body">
+    <div class="nav-label">Menu</div>
+    <a th:href="@{/dashboard}" class="nav-link"><span class="nav-ic">⬡</span>Dashboard</a>
+    <a th:href="@{/records}" class="nav-link active"><span class="nav-ic">☰</span>All Records</a>
+    <a th:href="@{/records/new}" class="nav-link"><span class="nav-ic">✦</span>New Record</a>
+    <div class="nav-label">Developer</div>
+    <a th:href="@{/api/records}" class="nav-link" target="_blank"><span class="nav-ic">⟨⟩</span>JSON API</a>
+  </nav>
+  <div class="sb-foot">
+    <div class="user-card">
+      <div class="u-av" th:text="${user.fullName.substring(0,1).toUpperCase()}">U</div>
+      <div style="flex:1;min-width:0;"><div class="u-name" th:text="${user.fullName}">User</div><div class="u-role" th:text="${user.role}">USER</div></div>
+      <!-- ✅ CSRF token added -->
+      <form th:action="@{/logout}" method="post" style="margin:0;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar fade-up">
+    <div><h1>All Records</h1><p>Viewing all data stored in AWS S3 — live</p></div>
+    <a th:href="@{/records/new}" class="btn-new">✦ New Record</a>
+  </div>
+
+  <div th:if="${successMessage}" class="alert as fade-up">✓ <span th:text="${successMessage}"></span></div>
+  <div th:if="${errorMessage}" class="alert ae fade-up">⚠ <span th:text="${errorMessage}"></span></div>
+
+  <div class="filter-bar fade-up fade-up-1">
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input type="text" class="fi" id="si" placeholder="Search by title or description…" oninput="ft()"/>
+    </div>
+    <select class="fi" id="sf" onchange="ft()" style="max-width:170px;padding-left:16px;">
+      <option value="">All Statuses</option>
+      <option value="active">🟢 Active</option>
+      <option value="pending">🟡 Pending</option>
+      <option value="closed">⚫ Closed</option>
+    </select>
+    <select class="fi" id="cf" onchange="ft()" style="max-width:190px;padding-left:16px;">
+      <option value="">All Categories</option>
+      <option>General</option><option>Finance</option><option>Operations</option>
+      <option>Engineering</option><option>Marketing</option><option>HR</option>
+      <option>Legal</option><option>Other</option>
+    </select>
+  </div>
+
+  <div class="tbl-card fade-up fade-up-2">
+    <div class="tbl-meta">
+      <div class="tbl-meta-l">
+        Total in S3: <b th:text="${#lists.size(records)}">0</b>
+        &ensp;·&ensp; Shown: <b id="shown" th:text="${#lists.size(records)}">0</b>
+      </div>
+      <div class="s3-live"><div class="s3-dot"></div>Live from AWS S3</div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(records)}" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">No records in S3 yet</div>
+      <div class="empty-desc">Create your first data record and it will appear here.</div>
+      <a th:href="@{/records/new}" class="empty-cta">Create First Record</a>
+    </div>
+
+    <table th:if="${!#lists.isEmpty(records)}">
+      <thead>
+        <tr><th>Title</th><th>Category</th><th>Description</th><th>Status</th><th>Created By</th><th>Date</th><th>Action</th></tr>
+      </thead>
+      <tbody id="tb">
+        <tr th:each="r : ${records}">
+          <td>
+            <div class="title-cell">
+              <div class="t" th:text="${r.title}">—</div>
+              <div class="id" th:text="${'#' + r.id.substring(0,8)}">—</div>
+            </div>
+          </td>
+          <td><span class="cat-pill" th:text="${r.category}">—</span></td>
+          <td class="desc-cell" th:text="${r.description}">—</td>
+          <td><span th:class="'badge badge-' + ${r.status.toLowerCase()}" th:text="${r.status}">—</span></td>
+          <td style="color:var(--fog);font-size:13px;" th:text="${r.createdBy}">—</td>
+          <td style="color:var(--fog);font-size:13px;" th:text="${#temporals.format(r.createdAt,'dd MMM yyyy')}">—</td>
+          <td>
+            <!-- ✅ CSRF token added to delete form -->
+            <form th:action="@{'/records/delete/' + ${r.id}}" method="post" onsubmit="return confirm('Delete this record from S3?');">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="del-btn">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+  function ft(){
+    const q=document.getElementById('si').value.toLowerCase();
+    const st=document.getElementById('sf').value.toLowerCase();
+    const cat=document.getElementById('cf').value.toLowerCase();
+    const rows=document.querySelectorAll('#tb tr');
+    let n=0;
+    rows.forEach(r=>{
+      const txt=r.textContent.toLowerCase();
+      const rSt=(r.cells[3]?.textContent||'').trim().toLowerCase();
+      const rCat=(r.cells[1]?.textContent||'').trim().toLowerCase();
+      const ok=txt.includes(q)&&(!st||rSt===st)&&(!cat||rCat===cat);
+      r.style.display=ok?'':'none'; if(ok)n++;
+    });
+    document.getElementById('shown').textContent=n;
+  }
+</script>
+</body>
+</html>
