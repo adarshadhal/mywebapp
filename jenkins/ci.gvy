@@ -25,6 +25,7 @@ pipeline {
             }
         }
         stage("Unit Test") {
+            steps {  // <-- This was missing
                 echo 'Unit testing...'
                 sh 'mvn test'
             }
@@ -59,5 +60,5 @@ pipeline {
         failure {
             echo 'Pipeline failed!'
         }
-}
-
+    }  // <-- Close the post block
+}  // <-- Close the pipeline block
