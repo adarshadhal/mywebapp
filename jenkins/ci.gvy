@@ -1,14 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage("Checkout") {
-            steps {
-                echo 'Cloning repository...'
-                git branch: 'main',
-                    credentialsId: 'GIT_HUB',
-                    url: 'https://github.com/adarshadhal/mywebapp.git'
-            }
-        }
         stage("Compile") {
             steps {
                 echo 'Compiling...'
@@ -33,7 +25,6 @@ pipeline {
             }
         }
         stage("Unit Test") {
-            steps {
                 echo 'Unit testing...'
                 sh 'mvn test'
             }
@@ -65,6 +56,7 @@ pipeline {
         success {
             echo 'Pipeline completed successfully!'
         }
+        failure {
             echo 'Pipeline failed!'
         }
     }
