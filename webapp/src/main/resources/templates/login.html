@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In — MyApp</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#06040f; --snow:#f4f0ff; --fog:rgba(244,240,255,0.45);
+      --teal:#00f5c8; --iris:#6366f1; --rose:#f43f8e; --rim:rgba(255,255,255,0.10);
+      --inp-bg:#1e1a35; --inp-border:rgba(255,255,255,0.25); --inp-text:#ffffff;
+      --inp-ph:rgba(255,255,255,0.40); --inp-focus-bg:#2a2550; --inp-focus-bd:#00f5c8;
+    }
+    html, body { height: 100%; }
+    body { min-height:100vh; background:var(--bg); color:var(--snow); font-family:'Geist',sans-serif; display:flex; overflow:hidden; -webkit-font-smoothing:antialiased; }
+    .bg-blobs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+    .blob { position:absolute; border-radius:50%; filter:blur(130px); animation:blobFloat linear infinite alternate; }
+    .blob-1 { width:700px;height:700px;background:#4f46e5;top:-250px;left:-200px;opacity:0.30;animation-duration:18s; }
+    .blob-2 { width:600px;height:600px;background:#f43f8e;bottom:-200px;right:-180px;opacity:0.24;animation-duration:14s;animation-delay:-5s; }
+    .blob-3 { width:450px;height:450px;background:#00f5c8;top:50%;left:42%;opacity:0.13;animation-duration:22s;animation-delay:-9s; }
+    @keyframes blobFloat { from{transform:translate(0,0) scale(1);} to{transform:translate(50px,35px) scale(1.10);} }
+    .grid { position:fixed;inset:0;z-index:1;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:70px 70px; }
+    .left { flex:1;position:relative;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:52px 56px;border-right:1px solid rgba(255,255,255,0.08); }
+    .left::before { content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(140deg,rgba(79,70,229,0.14) 0%,rgba(244,63,142,0.07) 55%,transparent 100%); }
+    .logo { display:flex;align-items:center;gap:13px;position:relative;z-index:1; }
+    .logo-mark { width:48px;height:48px;border-radius:15px;flex-shrink:0;background:linear-gradient(135deg,#00f5c8,#6366f1);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:27px;color:#fff;box-shadow:0 0 0 1px rgba(0,245,200,0.3),0 0 50px rgba(0,245,200,0.18);position:relative;overflow:hidden; }
+    .logo-mark::after { content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.28),transparent 55%); }
+    .logo-name { font-family:'Instrument Serif',serif;font-size:24px;background:linear-gradient(90deg,#00f5c8,#a5b4fc);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite; }
+    .logo-by { font-size:11px;color:rgba(255,255,255,0.28);margin-top:2px; }
+    @keyframes shimmer { 0%{background-position:-200% center;} 100%{background-position:200% center;} }
+    .hero { position:relative;z-index:1; }
+    .hero-badge { display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.32);border-radius:99px;padding:5px 14px;margin-bottom:28px;font-size:12px;font-weight:600;letter-spacing:0.06em;color:#a5b4fc; }
+    .pulse { width:6px;height:6px;border-radius:50%;background:#6366f1;animation:pulse-anim 2s infinite; }
+    @keyframes pulse-anim { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(.75);} }
+    .hero h1 { font-family:'Instrument Serif',serif;font-size:clamp(36px,4vw,56px);line-height:1.07;letter-spacing:-0.5px;margin-bottom:20px; }
+    .hero h1 em { font-style:italic;background:linear-gradient(120deg,#00f5c8,#f43f8e);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+    .hero p { font-size:15.5px;line-height:1.76;color:var(--fog);max-width:360px; }
+    .chips { display:flex;flex-wrap:wrap;gap:8px;position:relative;z-index:1; }
+    .chip { display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);border-radius:99px;padding:7px 16px;font-size:12px;font-weight:500;color:var(--fog);transition:border-color 0.2s,color 0.2s; }
+    .chip:hover { border-color:rgba(0,245,200,0.35);color:var(--snow); }
+    .chip-dot { width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0; }
+    .creator { font-size:12px;color:rgba(255,255,255,0.22);display:flex;align-items:center;gap:10px;position:relative;z-index:1; }
+    .creator::before { content:'';flex:1;height:1px;background:rgba(255,255,255,0.08); }
+    .creator strong { color:rgba(255,255,255,0.48); }
+    .right { width:480px;flex-shrink:0;position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;padding:52px 48px;background:#120f24;border-left:1px solid rgba(255,255,255,0.08); }
+    .right::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,#6366f1 40%,#00f5c8 70%,transparent 100%); }
+    .form-eyebrow { font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--teal);margin-bottom:10px; }
+    .form-title { font-family:'Instrument Serif',serif;font-size:34px;font-weight:400;color:#ffffff;margin-bottom:6px;line-height:1.15; }
+    .form-sub { font-size:14px;color:rgba(255,255,255,0.45);margin-bottom:34px; }
+    .alert { display:flex;align-items:flex-start;gap:10px;padding:13px 16px;border-radius:12px;font-size:13px;margin-bottom:22px;border:1px solid;line-height:1.5; }
+    .alert-error { background:rgba(244,63,142,0.12);border-color:rgba(244,63,142,0.35);color:#fda4c0; }
+    .alert-success { background:rgba(0,245,200,0.10);border-color:rgba(0,245,200,0.30);color:#7ffce8; }
+    .fg { margin-bottom:20px; }
+    .fl { display:block;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:9px; }
+    .input-shell { position:relative;background:var(--inp-bg);border:1.5px solid var(--inp-border);border-radius:13px;transition:border-color 0.2s,box-shadow 0.2s,background 0.2s; }
+    .input-shell:hover { border-color:rgba(255,255,255,0.40); }
+    .input-shell:focus-within { background:var(--inp-focus-bg);border-color:var(--inp-focus-bd);box-shadow:0 0 0 3px rgba(0,245,200,0.15),inset 0 1px 0 rgba(255,255,255,0.06); }
+    .input-ico { position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:17px;opacity:0.50;pointer-events:none;transition:opacity 0.2s; }
+    .input-shell:focus-within .input-ico { opacity:0.85; }
+    input[type="text"], input[type="password"], input[type="email"] { width:100%;background:transparent;border:none;outline:none;padding:14px 46px 14px 48px;color:var(--inp-text);font-family:'Geist',sans-serif;font-size:15px;caret-color:var(--teal); }
+    input::placeholder { color:var(--inp-ph); }
+    .eye-btn { position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.40);cursor:pointer;font-size:17px;padding:4px;transition:color 0.2s; }
+    .eye-btn:hover { color:var(--teal); }
+    .btn-submit { width:100%;padding:15px;margin-top:10px;background:linear-gradient(135deg,#6366f1 0%,#0ea5e9 100%);border:none;border-radius:13px;color:#fff;font-family:'Geist',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.04em;cursor:pointer;position:relative;overflow:hidden;transition:transform 0.15s,box-shadow 0.2s;box-shadow:0 4px 28px rgba(99,102,241,0.45); }
+    .btn-submit::before { content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.17),transparent); }
+    .btn-submit:hover { transform:translateY(-2px);box-shadow:0 10px 40px rgba(99,102,241,0.55); }
+    .divider { display:flex;align-items:center;gap:12px;margin:26px 0; }
+    .divider::before, .divider::after { content:'';flex:1;height:1px;background:rgba(255,255,255,0.10); }
+    .divider span { font-size:12px;color:rgba(255,255,255,0.25);letter-spacing:0.08em;text-transform:uppercase; }
+    .sw-link { text-align:center;font-size:14px;color:rgba(255,255,255,0.45); }
+    .sw-link a { color:var(--teal);font-weight:600;text-decoration:none;transition:opacity 0.15s; }
+    .sw-link a:hover { opacity:0.75;text-decoration:underline; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+    .fu   { animation:fadeUp 0.5s cubic-bezier(.22,.68,0,1.2) both; }
+    .fu-1 { animation-delay:0.08s; } .fu-2 { animation-delay:0.16s; }
+    .fu-3 { animation-delay:0.24s; } .fu-4 { animation-delay:0.32s; }
+    .fu-5 { animation-delay:0.40s; }
+    @media (max-width:860px) { .left{display:none;} .right{width:100%;border-left:none;padding:44px 28px;} }
+  </style>
+</head>
+<body>
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+<div class="grid"></div>
+
+<div class="left">
+  <div class="logo fu">
+    <div class="logo-mark">M</div>
+    <div>
+      <div class="logo-name">MyApp</div>
+      <div class="logo-by">by Adarsha</div>
+    </div>
+  </div>
+  <div class="hero fu fu-1">
+    <div class="hero-badge"><div class="pulse"></div>Welcome to MyApp</div>
+    <h1>Your data,<br/><em>perfectly</em><br/>in control.</h1>
+    <p>A beautiful platform to create, manage and retrieve your records — powered by enterprise-grade AWS S3 cloud storage.</p>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:22px;">
+    <div class="chips fu fu-2">
+      <div class="chip"><div class="chip-dot"></div>AWS S3 Cloud</div>
+      <div class="chip"><div class="chip-dot"></div>Secure Auth</div>
+      <div class="chip"><div class="chip-dot"></div>Live Dashboard</div>
+      <div class="chip"><div class="chip-dot"></div>REST API</div>
+    </div>
+    <div class="creator fu fu-3">Created by <strong>Adarsha</strong></div>
+  </div>
+</div>
+
+<div class="right">
+  <div class="form-eyebrow fu">Welcome back</div>
+  <div class="form-title fu fu-1">Sign in to MyApp</div>
+  <div class="form-sub fu fu-2">Enter your credentials to access your dashboard</div>
+
+  <div th:if="${errorMessage}"   class="alert alert-error  fu">⚠&nbsp;<span th:text="${errorMessage}"></span></div>
+  <div th:if="${successMessage}" class="alert alert-success fu">✓&nbsp;<span th:text="${successMessage}"></span></div>
+  <div th:if="${logoutMessage}"  class="alert alert-success fu">✓&nbsp;<span th:text="${logoutMessage}"></span></div>
+
+  <form th:action="@{/login}" method="post">
+    <div class="fg fu fu-3">
+      <label class="fl">Username</label>
+      <div class="input-shell">
+        <span class="input-ico">👤</span>
+        <input type="text" name="username" placeholder="Enter your username" required autocomplete="username"/>
+      </div>
+    </div>
+    <div class="fg fu fu-4">
+      <label class="fl">Password</label>
+      <div class="input-shell">
+        <span class="input-ico">🔑</span>
+        <input type="password" name="password" id="pwd" placeholder="Enter your password" required autocomplete="current-password"/>
+        <button type="button" class="eye-btn" onclick="togglePwd()" title="Show/hide password">👁</button>
+      </div>
+    </div>
+    <button type="submit" class="btn-submit fu fu-5">Sign In →</button>
+  </form>
+
+  <div class="divider fu"><span>or</span></div>
+  <div class="sw-link fu">
+    New to MyApp? <a th:href="@{/register}">Create a free account</a>
+  </div>
+</div>
+
+<script>
+  function togglePwd() {
+    const i = document.getElementById('pwd');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  }
+</script>
+</body>
+</html>

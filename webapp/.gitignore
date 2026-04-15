@@ -1,0 +1,7 @@
+
+*.war
+*.jar
+.mvn/
+application.properties
+*.class
+{src/
