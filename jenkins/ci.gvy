@@ -24,7 +24,6 @@ pipeline {
                     sh 'mvn verify'
                 }
             }
-        }
             post {
                 success {
                     jacoco changeBuildStatus: true, runAlways: true, skipCopyOfSrcFiles: true
@@ -33,7 +32,7 @@ pipeline {
         }
         stage("Unit Test") {
             steps {
-                dir('web'){
+                dir('webapp') {          // ✅ Fixed: 'web' → 'webapp'
                     echo 'Unit testing...'
                     sh 'mvn test'
                 }
@@ -49,8 +48,10 @@ pipeline {
         }
         stage("Docker Build") {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t ad:1 .'
+                dir('webapp') {          // ✅ Dockerfile should also be inside webapp
+                    echo 'Building Docker image...'
+                    sh 'docker build -t ad:1 .'
+                }
             }
         }
         stage("Docker Run") {
@@ -71,4 +72,5 @@ pipeline {
         failure {
             echo 'Pipeline failed!'
         }
+    }
 }
