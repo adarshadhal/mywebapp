@@ -3,21 +3,28 @@ pipeline {
     stages {
         stage("Compile") {
             steps {
-                echo 'Compiling...'
-                sh 'mvn clean compile'
+                dir('webapp') {
+                    echo 'Compiling...'
+                    sh 'mvn clean compile'
+                }       
             }
         }
         stage("Code Review") {
             steps {
-                echo 'Code review...'
-                sh 'mvn -P metrics pmd:pmd'
+                dir('webapp') {
+                    echo 'Code review...'
+                    sh 'mvn -P metrics pmd:pmd'
+                }
             }
         }
         stage("Code Verify") {
             steps {
-                echo 'Code verify...'
-                sh 'mvn verify'
+                dir('webapp') {
+                    echo 'Code verify...'
+                    sh 'mvn verify'
+                }
             }
+        }
             post {
                 success {
                     jacoco changeBuildStatus: true, runAlways: true, skipCopyOfSrcFiles: true
@@ -25,15 +32,19 @@ pipeline {
             }
         }
         stage("Unit Test") {
-            steps {  // <-- This was missing
-                echo 'Unit testing...'
-                sh 'mvn test'
+            steps {
+                dir('web'){
+                    echo 'Unit testing...'
+                    sh 'mvn test'
+                }
             }
         }
         stage("Package") {
             steps {
-                echo 'Packaging...'
-                sh 'mvn clean package'
+                dir('webapp') {
+                    echo 'Packaging...'
+                    sh 'mvn clean package'
+                }
             }
         }
         stage("Docker Build") {
@@ -60,5 +71,4 @@ pipeline {
         failure {
             echo 'Pipeline failed!'
         }
-    }  // <-- Close the post block
-}  // <-- Close the pipeline block
+}
